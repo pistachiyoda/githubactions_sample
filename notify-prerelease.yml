@@ -1,0 +1,22 @@
+name: Notify Pre-Release to Slack
+
+on:
+  release:
+    types: [prereleased]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify to Slack
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_USERNAME: "フロントエンド 検証環境プレリリース情報"
+          SLACK_TITLE: "新しいプレリリースが公開されました 🚀"
+          SLACK_MESSAGE: |
+            プレリリースNo.
+            ${{ github.event.release.name }}
+            プレリリースノート:
+            ${{ github.event.release.body }}
+            <!channel>

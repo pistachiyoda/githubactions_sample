@@ -1,0 +1,43 @@
+name: Deploy to Dev Environment
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "20"
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Generate Static Files
+        run: npm run gendev
+
+      - name: Upload to Sakura Rental Server
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: .output/public/
+          server-dir: /hoge-dev/
+
+      - name: Notify to Slack
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.FRONTEND_CH_SLACK_WEBHOOK_URL }}
+          SLACK_USERNAME: "フロントエンド環境デプロイ通知"
+          SLACK_TITLE: "Dev環境にデプロイが完了しました🚀"
+          SLACK_MESSAGE: |
+            ${{ github.event.head_commit.message }}
+            <@user_id>
